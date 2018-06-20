@@ -1,77 +1,52 @@
 import numpy as np
-#########considers weekly penalty also    
-def choose_week(count_matrix,warehouse,weekly_penalty,random_array,random_index):
-    selected_row = count_matrix[warehouse,:]
-    selected_weekly_penalty = weekly_penalty[warehouse,:]
+##penalty check with capacity is done
+##selecting week by considering only number of rakes allocated   
+def choose_week(count_matrix,warehouse,random_array,random_index):
+    selected_row = count_matrix[warehouse]
     zero_index = np.array(np.nonzero(selected_row==0))
     num = np.size(zero_index)
     if(num != 0):
-        zero_index = zero_index.reshape(num,)
-        minimum=selected_weekly_penalty[zero_index[0]]
-        count=zero_index[0]
-        i=1
-        while(i<num):
-            if((selected_weekly_penalty[zero_index[i]])<minimum):
-                minimum=selected_weekly_penalty[zero_index[i]]
-                count=zero_index[i]
-            i=i+1;
-        return count
+        addition=random_array[random_index]%num
+        random_index += 1
+        #zero_index = zero_index.reshape(num,)
+        w=zero_index[0,addition]
+        return w
     one_index = np.array(np.nonzero(selected_row==1))
     num = np.size(one_index)
     if(num != 0):
-           one_index = one_index.reshape(num,)    
-           minimum=selected_weekly_penalty[one_index[0]]
-           count=one_index[0]
-           i=1
-           while(i<num):
-                if((selected_weekly_penalty[one_index[i]])<minimum):
-                  minimum=selected_weekly_penalty[one_index[i]]
-                  count=one_index[i]
-                i=i+1;
-           return count
+           addition=random_array[random_index]%num
+           random_index += 1
+           #one_index = one_index.reshape(num,)
+           w=one_index[0,addition]
+           return w
     two_index = np.array(np.nonzero(selected_row==2))
     num = np.size(two_index)
     if(num != 0):
-           two_index = two_index.reshape(num,)
-           minimum=selected_weekly_penalty[two_index[0]]
-           count=two_index[0]
-           i=1
-           while(i<num):
-            if((selected_weekly_penalty[two_index[i]])<minimum):
-                minimum=selected_weekly_penalty[two_index[i]]
-                count=two_index[i]
-            i=i+1;
-           return count
+           addition=random_array[random_index]%num
+           random_index += 1
+           #two_index = two_index.reshape(num,)
+           w=two_index[0,addition]
+           return w
     three_index = np.array(np.nonzero(selected_row==3))
     num = np.size(three_index)
     if(num != 0):
-           three_index = three_index.reshape(num,)
-           minimum=selected_weekly_penalty[three_index[0]]
-           count=three_index[0]
-           i=1
-           while(i<num):
-            if((selected_weekly_penalty[three_index[i]])<minimum):
-                minimum=selected_weekly_penalty[three_index[i]]
-                count=three_index[i]
-            i=i+1;
-           return count       
+           addition=random_array[random_index]%num
+           random_index += 1
+           #three_index = three_index.reshape(num,)
+           w=three_index[0,addition]
+           return w       
     four_index = np.array(np.nonzero(selected_row==4))
-    num = np.size(four_index)
+    num = np.size(two_index)
     if(num != 0):
-           four_index = four_index.reshape(num,)
-           minimum=selected_weekly_penalty[four_index[0]]
-           count=four_index[0]
-           i=1
-           while(i<num):
-            if((selected_weekly_penalty[four_index[i]])<minimum):
-                minimum=selected_weekly_penalty[four_index[i]]
-                count=four_index[i]
-            i=i+1;
-           return count   
+           addition=random_array[random_index]%num
+           random_index += 1
+           #four_index = four_index.reshape(num,)
+           w=four_index[0,addition]
+           return w   
     else:
-        count = random_array[random_index]%4
+        w = random_array[random_index]%4
         random_index += 1
-        return count
+        return w
 def capacity_utilization_pf(a,storage_capacity):
     n = np.ma.size(a)
     b = np.zeros((n))
@@ -107,20 +82,20 @@ def surplus_demand(surplus,initial_stock_level,demand,max_allottment,available_s
         surplus -= addition
     return demand,random_index
 	
-def surplus_allocation(rake_allocated,demand,total_warehouses,random_array,random_index,count_matrix,key,weekly_penalty):
+def surplus_allocation(rake_allocated,demand,total_warehouses,random_array,random_index,count_matrix,key):
     allocated1 = np.sum(rake_allocated)
     allocated = np.sum(allocated1)
     excess = np.array(np.nonzero(demand>4))
-    num = np.size(excess)
-    excess = excess.reshape(num,)
-    for i in excess:
+    #num = np.size(excess)
+    #excess = excess.reshape(num,)
+    for i in excess[0]:
         dem = demand[i]
         while(dem > 8-demand[i]):
             if(key==1):
                 w = random_array[random_index]%4
                 random_index += 1
             else:
-                w=choose_week(count_matrix,i,weekly_penalty,random_array,random_index)
+                w=choose_week(count_matrix,i,random_array,random_index)
             if(rake_allocated[i][w]==0) :
                 rake_allocated[i][w] += 2
                 count_matrix[i][w] += 2
@@ -129,7 +104,7 @@ def surplus_allocation(rake_allocated,demand,total_warehouses,random_array,rando
     return allocated,rake_allocated,random_index,count_matrix
 	
 
-def rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_matrix,comb,k_shift,k_reset,k_terminate,terminal_capacity,total_warehouses,total_weeks,random_array,random_index,count_matrix,initial_count_matrix,key,weekly_penalty):
+def rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_matrix,comb,k_shift,k_reset,k_terminate,terminal_capacity,total_warehouses,total_weeks,random_array,random_index,count_matrix,initial_count_matrix,key):
     k = 1
     while allocated<total_rakes:
         j = random_array[random_index]%total_warehouses
@@ -138,36 +113,36 @@ def rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_
             w = random_array[random_index]%total_weeks
             random_index += 1
         else:
-            w=choose_week(count_matrix,j,weekly_penalty,random_array,random_index)
+            w=choose_week(count_matrix,j,random_array,random_index)
              
         
-        selected_row = rake_allocated[j,:]
-        sum4 = sum(selected_row)
+        #selected_row = rake_allocated[j]
+        sum4 = sum(rake_allocated[j])
         dv2 = random_array[random_index]
         random_index += 1
         partition = 500
         if ((sum4<monthly_allotment[j]) and (rake_allocated[j][w]==0)):
-                comb_row = comb_matrix[j,:]
-                combwh = np.array(np.nonzero(comb_row==1))
-                num = np.size(combwh)
-                combwh = combwh.reshape(num,)
+                #comb_row = comb_matrix[j]
+                combwh = np.array(np.nonzero(comb_matrix[j]==1))
+                #num = np.size(combwh)
+                #combwh = combwh.reshape(num,)
                 sum_ra = np.sum(rake_allocated,axis=1)
                 remaining_aloc=monthly_allotment-sum_ra
-                c=np.array(np.nonzero(remaining_aloc[combwh[:]]>0))
-                possible_wh=combwh[c[:]]
+                c=np.array(np.nonzero(remaining_aloc[combwh[0]]>0))
+                possible_wh=combwh[0,c]
                 num = np.size(possible_wh)
-                possible_wh = possible_wh.reshape(num)
-                comb_row_sum = sum(comb_row)
+                #possible_wh = possible_wh.reshape(num)
                 if(num>0):
-                    minimum=possible_wh[0]
+                    minimum=possible_wh[0,0]
                     temp=1
                     while(temp<num):
-                      if(count_matrix[possible_wh[temp]][w]<count_matrix[minimum][w]):
-                        minimum = possible_wh[temp]
+                      if(count_matrix[possible_wh[0,temp]][w]<count_matrix[minimum][w]):
+                        minimum = possible_wh[0,temp]
                       temp+=1
                     cw = minimum
-                    selected_row2 = rake_allocated[cw,:]
-                    sum6 = sum(selected_row2)
+                    #selected_row2 = rake_allocated[cw,:]
+                    #sum6 = sum(selected_row2)
+                    sum6 = sum_ra[cw]
                     while(rake_allocated[cw][w]==0 and sum6<monthly_allotment[cw] and dv2<partition):
                         rake_allocated[j][w] += 1
                         count_matrix[j][w] += 1
@@ -184,7 +159,7 @@ def rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_
                                 count_matrix[j][w] += 2
                                 allocated += 2
                                 sum4 += 2
-                elif(comb_row_sum == 0 and (sum4+1)<monthly_allotment[j]):
+                elif(num == 0 and (sum4+1)<monthly_allotment[j]):
                     rake_allocated[j][w] += 2
                     count_matrix[j][w] += 2
                     allocated += 2
@@ -194,13 +169,13 @@ def rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_
             rake_allocated = np.zeros((total_warehouses,total_weeks))
             count_matrix=initial_count_matrix.copy()
             comb = np.zeros((total_warehouses,total_warehouses,4))
-            allocated,rake_allocated,random_index,count_matrix = surplus_allocation(rake_allocated,monthly_allotment,total_warehouses,random_array,random_index,count_matrix,key,weekly_penalty)
+            allocated,rake_allocated,random_index,count_matrix = surplus_allocation(rake_allocated,monthly_allotment,total_warehouses,random_array,random_index,count_matrix,key)
         if(k>k_terminate):
             break
         k += 1
     return rake_allocated,comb,allocated,random_index,count_matrix
 	
-def penalty(rake_allocated,rake_penalty_h,rake_penalty_f,weekly_penalty):
+def penalty(rake_allocated,rake_penalty_h,rake_penalty_f,weekly_penalty,initial_stock_level,demand,storage_capacity):
     half_rakes = np.array(np.nonzero(rake_allocated==1))
     full_rakes = np.array(np.nonzero(rake_allocated==2))
     size1 = np.size(half_rakes)
@@ -219,9 +194,10 @@ def penalty(rake_allocated,rake_penalty_h,rake_penalty_f,weekly_penalty):
         week_penalty += weekly_penalty[swh][sw]
         m += 1
 
-#    capacity_utilization_penalty = np.sum(capacity_utilization_pf(initial_stock_level+demand,storage_capacity))
-    total_penalty = rake_penalty + week_penalty 
-    return total_penalty
+    capacity_utilization_penalty = np.sum(capacity_utilization_pf(initial_stock_level+demand,storage_capacity))
+    total_penalty = rake_penalty + week_penalty
+    total_penalty_with_capacity=total_penalty+capacity_utilization_penalty
+    return total_penalty,total_penalty_with_capacity
 	
 import time
 
@@ -243,21 +219,23 @@ def simulate(iteration,total_warehouses,total_weeks,total_rakes,demand,initial_s
         demand,random_index = surplus_demand(surplus,initial_stock_level,demand,max_allottment,available_space,total_warehouses,total_weeks,storage_capacity,random_array,random_index)
         comb = np.zeros((total_warehouses,total_warehouses,total_weeks))
         monthly_allotment = demand
-        allocated,rake_allocated,random_index,count_matrix = surplus_allocation(rake_allocated,demand,total_warehouses,random_array,random_index,count_matrix,key,weekly_penalty)
-        rake_allocated,comb,allocated,random_index,count_matrix = rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_matrix,comb,k_shift,k_reset,k_terminate,terminal_capacity,total_warehouses,total_weeks,random_array,random_index,count_matrix,initial_count_matrix,key,weekly_penalty)
+        allocated,rake_allocated,random_index,count_matrix = surplus_allocation(rake_allocated,demand,total_warehouses,random_array,random_index,count_matrix,key)
+        rake_allocated,comb,allocated,random_index,count_matrix = rake_allocation(allocated,total_rakes,rake_allocated,monthly_allotment,comb_matrix,comb,k_shift,k_reset,k_terminate,terminal_capacity,total_warehouses,total_weeks,random_array,random_index,count_matrix,initial_count_matrix,key)
         
-        total_penalty = penalty(rake_allocated,rake_penalty_h,rake_penalty_f,weekly_penalty)
+        total_penalty,total_penalty_with_capacity = penalty(rake_allocated,rake_penalty_h,rake_penalty_f,weekly_penalty,initial_stock_level,monthly_allotment,storage_capacity)
         if(first ==1 and allocated == total_rakes):
             final_weekly_distribution = rake_allocated
             final_count_matrix=count_matrix
             final_total_penalty = total_penalty
+            final_penalty_with_capacity= total_penalty_with_capacity
             final_comb = comb
             final_monthly_allotment=monthly_allotment
             first += 1
         if(allocated == total_rakes and first != 1):
-            if(total_penalty<final_total_penalty):
+            if(total_penalty_with_capacity<final_penalty_with_capacity):
                 final_weekly_distribution = rake_allocated
                 final_total_penalty = total_penalty
+                final_penalty_with_capacity= total_penalty_with_capacity
                 final_comb = comb
                 final_monthly_allotment=monthly_allotment
                 final_count_matrix=count_matrix
@@ -292,23 +270,40 @@ def main():
     k_reset = 575
     k_terminate = 7450
     comb_matrix =    np.array([0,1,1,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1,1,0,0,0,0,0,0,0,0,1,1,0,1,1,1,0,1,0,1,0,0,0,0,1,1,1,0,1,1,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,1,1,1,1,0,0,0,0,1,1,1,1,0,1,1,1,1,1,1,0,0,0,0,0,0,1,1,0,1,1,1,1,0,0,0,0,0,1,0,1,1,1,0,1,1,1,1,0,0,0,0,0,0,1,1,1,1,0,1,1,1,1,1,0,0,1,0,1,1,1,1,1,0,1,1,1,1,0,0,0,0,1,1,1,1,1,1,0,1,1,1,0,0,0,0,0,1,0,1,1,1,1,0,1,1,0,0,0,0,0,0,0,0,1,1,1,1,0,1,0,0,0,0,0,0,0,0,1,1,1,1,1,0])
-    iteration=1000
+    iteration=1
     count_matrix=np.zeros((total_warehouses,4))
     print("Boiled rice")
     count_matrix,new_stock_b,penalty_b,weekly_distribution_b=simulate(iteration,total_warehouses,total_weeks,total_rakes_b,demand_b,initial_stock_level_rice,storage_capacity,terminal_capacity,max_allottment,rake_penalty_h,rake_penalty_f,weekly_penalty_rice,k_shift,k_reset,k_terminate,count_matrix,comb_matrix,1)
+    
     print("Raw rice")
     initial_stock_level_rice=initial_stock_level_rice+new_stock_b
     count_matrix,new_stock_r,penalty_r,weekly_distribution_r=simulate(iteration,total_warehouses,total_weeks,total_rakes_r,demand_r,initial_stock_level_rice,storage_capacity,terminal_capacity,max_allottment,rake_penalty_h,rake_penalty_f,weekly_penalty_rice,k_shift,k_reset,k_terminate,count_matrix,comb_matrix,2)
+    
     initial_stock_level_rice=initial_stock_level_rice+new_stock_r
     initial_stock_level_wh= initial_stock_level_wh+initial_stock_level_rice
     print("Wheat") 
     count_matrix,new_stock_w,penalty_w,weekly_distribution_w=simulate(iteration,total_warehouses,total_weeks,total_rakes_w,demand_w,initial_stock_level_wh,storage_capacity,terminal_capacity,max_allottment,rake_penalty_h,rake_penalty_f,weekly_penalty_wh,k_shift,k_reset,k_terminate,count_matrix,comb_matrix,3)
-    total_new_stock=new_stock_b+new_stock_r+new_stock_w
+    #########finding cumulative values
+    b_sum=np.sum(weekly_distribution_b,axis=0)
+#    print(b_sum)
+    r_sum=np.sum(weekly_distribution_r,axis=0)
+#    print(r_sum)
+    w_sum=np.sum(weekly_distribution_w,axis=0)
+#    print(w_sum)
+    final_week_wise_sum=np.concatenate((w_sum,r_sum,b_sum),axis=0)
+#    print(final_week_wise_sum)
+    total_weekly_distribution=weekly_distribution_b+weekly_distribution_r+weekly_distribution_w
+    total_weekly_distribution_sum=np.sum(total_weekly_distribution,axis=1)
+    total_weekly_distribution_sum=total_weekly_distribution_sum.reshape(14,1)
+#    print(total_weekly_distribution_sum)
     print(count_matrix)
-    capacity_utilization_penalty = np.sum(capacity_utilization_pf(total_initial_stock_level+total_new_stock,storage_capacity))
+    
+    
     penalty_sum=penalty_r+penalty_b+penalty_w
+    total_new_stock=new_stock_b+new_stock_r+new_stock_w
+    capacity_utilization_penalty = np.sum(capacity_utilization_pf(total_initial_stock_level+total_new_stock,storage_capacity))
     penalty_sum=penalty_sum+capacity_utilization_penalty 
-    print(penalty_sum)
+#    print(penalty_sum)
     end = time.time()
     print(end-start)
 main()    
